@@ -12,7 +12,7 @@ AllSeas is a travel agency landing page built with vanilla HTML, CSS, and JavaSc
 - **Tailwind CSS 3.4.18** - Utility-first CSS framework
 - **PostCSS** - CSS processing with Autoprefixer
 - **Vanilla JavaScript** - No frameworks, pure JS for interactivity
-- **Formspree** - Contact form submission handling
+- **Web3Forms + hCaptcha** - Contact form submission handling
 - **Custom Fonts**:
   - Geometos Soft (Regular, Extra Light)
   - Outfit (Extra Light)
@@ -58,7 +58,7 @@ allseas/
 - **Mobile Menu** - Hamburger menu with smooth animations for mobile devices
 - **Image Carousel** - Auto-advancing hero carousel (2-second intervals)
 - **Scroll Animations** - Intersection Observer-based fade-in animations
-- **Contact Form** - Integrated with Formspree for form submissions
+- **Contact Form** - Integrated with Web3Forms and protected by hCaptcha
 - **Smooth Scrolling** - Native smooth scroll behavior for anchor links
 
 ### Sections
@@ -136,11 +136,12 @@ The project uses a custom Tailwind configuration with:
 - Custom font families (geometos, outfit)
 - Content paths for HTML and JS files
 
-### Formspree Integration
-The contact form is configured to submit to Formspree endpoint:
-- Endpoint: `https://formspree.io/f/xldaavpa`
+### Web3Forms Integration
+The contact form is configured to submit to Web3Forms endpoint:
+- Endpoint: `https://api.web3forms.com/submit`
+- Access key is embedded in the form markup
 - Subject: "Nova mensagem do site AllSeas"
-- Includes built-in spam protection
+- Includes built-in spam protection via hCaptcha
 
 ## 📦 Build Process
 
@@ -155,7 +156,7 @@ The build script (`scripts/build.js`) performs the following:
 
 - The site is currently in Portuguese (Brazilian)
 - All images should be optimized before production deployment
-- Formspree endpoint may need to be updated for production
+- Web3Forms access key should be rotated for production deployments
 - Consider adding analytics (Google Analytics, etc.)
 - Add meta tags for social media sharing (Open Graph, Twitter Cards)
 
