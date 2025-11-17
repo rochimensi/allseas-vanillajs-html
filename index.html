@@ -212,9 +212,9 @@
     <section class="contact-section w-full py-20 md:py-32 scroll-animate" id="contato">
         <div class="container mx-auto px-4">
             <h2 class="text-center mb-12 contact-title">ENTRE EM CONTATO</h2>
-            <form class="contact-form max-w-2xl mx-auto" id="contactForm" action="https://formspree.io/f/xldaavpa" method="POST">
-                <input type="hidden" name="_subject" value="Nova mensagem do site AllSeas">
-                <input type="hidden" name="_next" value="#contato">
+            <form class="contact-form max-w-2xl mx-auto" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+                <input type="hidden" name="access_key" value="b1db177d-10f2-4f66-a44e-375290bc38eb">
+                <input type="hidden" name="subject" value="Nova mensagem do site AllSeas">
                 <div class="form-group mb-6">
                     <label for="nome" class="block mb-2">NOME</label>
                     <input 
@@ -248,6 +248,10 @@
                         required
                     ></textarea>
                 </div>
+                <div class="form-group text-center pb-4">
+                    <div class="h-captcha" data-captcha="true"></div>
+                    <p id="captchaStatus" class="mt-3 text-white text-sm tracking-wide hidden" aria-live="polite"></p>
+                </div>
                 <div class="form-group text-center">
                     <button 
                         type="submit" 
@@ -256,6 +260,7 @@
                         ENVIAR
                     </button>
                 </div>
+                <p id="formStatus" class="mt-4 text-center text-white text-sm tracking-wide hidden" aria-live="polite"></p>
             </form>
         </div>
     </section>
@@ -399,23 +404,95 @@
                 observer.observe(el);
             });
 
-            // Contact form submission handler
+            // Contact form submission handler (Web3Forms)
             const contactForm = document.getElementById('contactForm');
             if (contactForm) {
                 const submitButton = contactForm.querySelector('button[type="submit"]');
+                const statusElement = document.getElementById('formStatus');
+                const captchaStatusElement = document.getElementById('captchaStatus');
 
-                contactForm.addEventListener('submit', function(event) {
-                    // Show loading state
-                    if (submitButton) {
-                        submitButton.disabled = true;
-                        submitButton.textContent = 'ENVIANDO...';
+                function updateButton(label, disabled) {
+                    if (!submitButton) return;
+                    submitButton.textContent = label;
+                    submitButton.disabled = disabled;
+                }
+
+                function showStatus(message) {
+                    if (!statusElement) return;
+                    statusElement.textContent = message;
+                    statusElement.classList.remove('hidden');
+                }
+
+                function hideStatus() {
+                    if (!statusElement) return;
+                    statusElement.textContent = '';
+                    statusElement.classList.add('hidden');
+                }
+
+                function showCaptchaMessage(message) {
+                    if (!captchaStatusElement) return;
+                    captchaStatusElement.textContent = message;
+                    captchaStatusElement.classList.remove('hidden');
+                }
+
+                function hideCaptchaMessage() {
+                    if (!captchaStatusElement) return;
+                    captchaStatusElement.textContent = '';
+                    captchaStatusElement.classList.add('hidden');
+                }
+
+                contactForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    hideStatus();
+
+                    const captchaField = contactForm.querySelector('textarea[name="h-captcha-response"]');
+                    const captchaValue = captchaField ? captchaField.value : '';
+
+                    if (!captchaValue) {
+                        showCaptchaMessage('Por favor, complete o captcha.');
+                        updateButton('ENVIAR', false);
+                        return;
                     }
 
-                    // Form will submit to Formspree
-                    // Formspree handles spam protection automatically with their built-in CAPTCHA
+                    hideCaptchaMessage();
+                    updateButton('ENVIANDO...', true);
+
+                    try {
+                        const formData = new FormData(contactForm);
+                        const response = await fetch(contactForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        let data = {};
+                        try {
+                            data = await response.json();
+                        } catch (jsonError) {
+                            // No-op: Web3Forms sometimes returns empty body on success
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Não foi possível enviar sua mensagem. Tente novamente.');
+                        }
+
+                        contactForm.reset();
+                        updateButton('ENVIADO!', true);
+                        showStatus('ENVIADO! Obrigado por entrar em contato.');
+                        hideCaptchaMessage();
+
+                        setTimeout(() => updateButton('ENVIAR', false), 2500);
+                        setTimeout(() => hideStatus(), 5000);
+                    } catch (error) {
+                        updateButton('ENVIAR', false);
+                        showStatus(error.message || 'Erro ao enviar a mensagem. Tente novamente.');
+                    }
                 });
             }
         });
     </script>
+
+    <script src="https://web3forms.com/client/script.js" async defer></script>
 </body>
 </html>
